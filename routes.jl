@@ -1,22 +1,24 @@
-using Genie.Router, Genie.Requests, Genie.Responses, Genie.Renderer, Genie.Sessions, Genie.Renderer.Html
+using Genie.Router, Genie.Requests, Genie.Responses, Genie.Renderer, Genie.Renderer.Html, Genie.Sessions
 
-mutable struct User
-    alias::String
-    poker::String
-end
-scrum_data = Dict{String, User}()
+using Genie.Assets
+
+Genie.config.websockets_server = true
+
+login_users = Dict{String, String}()
 
 Sessions.init()
 
-route("/") do
-    # get session id corresponding to current request
-    # avoid users login multiple times
-    sid = Sessions.id(request())
-    if haskey(scrum_data, sid)
+function validate_and_redirect(sid::String)
+    if haskey(login_users, sid)
         redirect(:scrum_url)
     else
         redirect(:login_url)
     end
+end
+
+route("/") do
+    sid = Sessions.id(request())
+    validate_and_redirect(sid)
 end
 
 route("/login", named=:login_url) do
@@ -28,7 +30,7 @@ route("/login/update", named=:update_user_info_url) do
     if length(strip(alias)) > 0
         sid = Sessions.id()
         sess, resp = Sessions.start(sid, request(), getresponse())
-        scrum_data[sid] = User(alias, "")
+        login_users[sid] = alias
         redirect(:scrum_url)
     else
         redirect(:login_url)
@@ -36,7 +38,8 @@ route("/login/update", named=:update_user_info_url) do
 end
 
 route("/scrum", named=:scrum_url) do
-    sid = Sessions.id(request())
-    alias = scrum_data[sid].alias
-    html(:scrum, :scrum, alias=alias, layout=:scrumpoker)
+    # test to start a channel
+    Assets.channels_support()
+
+    Genie.WebChannels.broadcast("__", string(Genie.WebChannels.connected_clients()))
 end
