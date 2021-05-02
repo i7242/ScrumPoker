@@ -1,7 +1,8 @@
+using Base:@kwdef
+using Revise
 using Genie.Router, Genie.Requests, Genie.Responses
 using Genie.Assets, Genie.Sessions
 using Genie.Renderer, Genie.Renderer.Html, Stipple
-using Base:@kwdef
 
 const ascii_title = """
                                      ▄▄                                                                                                          
@@ -112,6 +113,10 @@ const ascii_flip ="""
 ▓▓      ▓▓      ▓▓ ▓▓      
 ██      ███████ ██ ██      
 """
+
+# secret code for websocket encryption
+# ignored by git in default, but need to generate when deployed
+Genie.Generator.write_secrets_file()
 
 @kwdef mutable struct ScrumModel <: ReactiveModel
     # for Stipple, a default value is required
