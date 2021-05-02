@@ -1,1 +1,1 @@
-web: bin/server $PORT
+web: GENIE_ENV=prod bin/server $PORT
