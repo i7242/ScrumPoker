@@ -301,4 +301,3 @@ route("/scrum") do
     scrum_ui()
 end
 
-up()
